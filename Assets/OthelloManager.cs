@@ -22,7 +22,7 @@ public class OthelloManager : MonoBehaviour {
 
     // Othello AI
     OthelloAI ai;
-    private int aiDepth = 6;
+    private int aiDepth = 5;
 
     // Stone Prefabs
     public GameObject blackStonePrefab;
@@ -32,7 +32,6 @@ public class OthelloManager : MonoBehaviour {
     // Game parameter
     int turn = 1;
     bool endFlag = false;
-    bool passCalled = false;
     
 	// Use this for initialization
 	void Start ()
@@ -42,12 +41,15 @@ public class OthelloManager : MonoBehaviour {
 
         player1 = new OthelloUser(StoneColor.black);
         // player2 = new OthelloUser(StoneColor.white);
+        // player1 = new OthelloComputer(StoneColor.black, aiDepth);
         player2 = new OthelloComputer(StoneColor.white, aiDepth);
 
         PutStone(new Pos() { x = 3, y = 3 }, StoneColor.black);
         PutStone(new Pos() { x = 3, y = 4 }, StoneColor.white);
         PutStone(new Pos() { x = 4, y = 3 }, StoneColor.white);
         PutStone(new Pos() { x = 4, y = 4 }, StoneColor.black);
+
+        evaluator = new OthelloEvaluator();
 
     }
 
@@ -86,8 +88,7 @@ public class OthelloManager : MonoBehaviour {
             ReverseStones(board.GetReversibles(action, color), color);
 
             board.UpdateBoard(action, color);
-            OthelloEvaluator evaluator = new OthelloEvaluator();
-            evaluator.SetBoard(board.GetBoard());
+
 
             turn += 1;
 

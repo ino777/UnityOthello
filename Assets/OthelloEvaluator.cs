@@ -20,7 +20,7 @@ namespace Othello
             { -11.0, -16.0, -1.0, -3.0, -3.0, -1.0, -16.0, -11.0 },
             { 45.0, -11.0, 4.0, -1.0, -1.0, 4.0, -11.0, 45.0}
         };
-        
+
         /*
         readonly double[,] evaluateValue = new double[8, 8]
         {
@@ -35,9 +35,9 @@ namespace Othello
         };
         */
 
-        readonly double w1 = 3.0 + Utils.Utils.GetRandn();
-        readonly double w2 = 5.0 + Utils.Utils.GetRandn();
-        readonly double w3 = 1.0 + Utils.Utils.GetRandn();
+        public readonly double w1 = 3.0 + Utils.Utils.GetRand();
+        public readonly double w2 = 5.0 + Utils.Utils.GetRand();
+        public readonly double w3 = 1.0 + Utils.Utils.GetRand();
 
         readonly Pos[] corners = new Pos[4]
         {
@@ -47,14 +47,25 @@ namespace Othello
             new Pos(){ x = boardSize-1, y = boardSize-1 }
         };
 
+        readonly Pos[] xPos = new Pos[4]
+        {
+            new Pos(){ x = 1, y = 1 },
+            new Pos(){ x = 1, y = boardSize-2 },
+            new Pos(){ x = boardSize-2, y = 1 },
+            new Pos(){ x = boardSize-2, y = boardSize-2 },
+        };
+
 
         // Whether the stone at the position is imreversible
         bool IsConfirmed(Pos pos, int color)
         {
+            // Return false if there is not self stone at the position
             if (board[pos.y, pos.x] != color)
             {
                 return false;
             }
+
+
             // Check if the position is connected to the corners only with own stones
 
             // Vertical line
@@ -114,16 +125,19 @@ namespace Othello
         public int Confirms(int color)
         {
             int total = 0;
-            Pos p;
-            for (int x=0; x < boardSize; x++)
+            Pos top;
+            Pos bottom;
+            Pos left;
+            Pos right;
+            for (int i=0; i < boardSize; i++)
             {
-                for (int y=0; y < boardSize; y++)
+                top = new Pos() { x = i, y = 0 };
+                bottom = new Pos() { x = i, y = boardSize - 1 };
+                left = new Pos() { x = 0, y = i };
+                right = new Pos() { x = boardSize - 1, y = i };
+                if (IsConfirmed(top, color) || IsConfirmed(bottom, color) || IsConfirmed(left, color) || IsConfirmed(right, color))
                 {
-                    p = new Pos() { x = x, y = y };
-                    if (IsConfirmed(p, color))
-                    {
-                        total += 1;
-                    }
+                    total += 1;
                 }
             }
             return total;
@@ -164,7 +178,7 @@ namespace Othello
 
             double fs = (Confirms(color) - Confirms(StoneColor.OppColor(color)) + r.NextDouble() * 3) * 11;
 
-            double cn = (Availables(color).Count - Availables(StoneColor.OppColor(color)).Count + r.NextDouble() * 2) * 10;
+            double cn = (Availables(color).Count + r.NextDouble() * 2) * 10;
 
             double bp = 0.0;
             int[,] tmpBoard = GetBoardForEval(color);

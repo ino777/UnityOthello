@@ -58,6 +58,7 @@ namespace Othello
     public class OthelloComputer : OthelloPlayer
     {
         OthelloAI ai;
+        System.Diagnostics.Stopwatch stopWatch;
 
         public OthelloComputer(int color, int depth) : base(color)
         {
@@ -66,7 +67,11 @@ namespace Othello
 
         public override Pos? Action(int[,] board)
         {
-            return ai.AcquireOptAction(board, ai.depthMax, Color);
+            stopWatch = System.Diagnostics.Stopwatch.StartNew();
+            Pos? action = ai.AcquireOptAction(board, Color);
+            stopWatch.Stop();
+            Debug.Log(string.Format("Time: {0}", stopWatch.Elapsed));
+            return action;
         }
     }
 }
