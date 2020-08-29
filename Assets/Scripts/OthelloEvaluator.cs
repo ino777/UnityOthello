@@ -143,6 +143,7 @@ namespace Othello
             return total;
         }
 
+        // Return a numeric array for evaluation
         // Self stone => +1.0, Opponent stone => -1.0, Blank => 0.0
         int[,] GetBoardForEval(int color)
         {

@@ -152,7 +152,7 @@ namespace Othello
             return reversibleStones;
         }
 
-        // Whether you can put a stone on this position
+        // Whether you can put a stone at this position
         internal bool IsAvailable(Pos pos, int color)
         {
             if (!IsBlank(pos))

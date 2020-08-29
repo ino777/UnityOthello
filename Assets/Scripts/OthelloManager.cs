@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 
 using Othello;
 
@@ -22,12 +22,21 @@ public class OthelloManager : MonoBehaviour {
 
     // Othello AI
     OthelloAI ai;
-    private int aiDepth = 5;
+    private int aiDepth = 4;
 
     // Stone Prefabs
     public GameObject blackStonePrefab;
     public GameObject whiteStonePrefab;
 
+    // Audio
+    AudioSource audioSource;
+
+
+    // UI Text
+    public Text blackCountText;
+    public Text whiteCountText;
+    public Text blackEventText;
+    public Text whiteEventText;
 
     // Game parameter
     int turn = 1;
@@ -51,6 +60,10 @@ public class OthelloManager : MonoBehaviour {
 
         evaluator = new OthelloEvaluator();
 
+        audioSource = GetComponent<AudioSource>();
+
+        blackCountText.text = "2";
+        whiteCountText.text = "2";
     }
 
 
@@ -58,54 +71,69 @@ public class OthelloManager : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
+        if (endFlag) { return; }
+
         // End
-        if (!endFlag && IsEnd())
+        if (IsEnd())
         {
             endFlag = true;
             Debug.Log("END!!");
             int winner = GetWinner();
+            if (winner == StoneColor.black)
+            {
+                blackEventText.text = "Win";
+                whiteEventText.text = "Lose";
+            }
+            else if (winner == StoneColor.white)
+            {
+                blackEventText.text = "Lose";
+                whiteEventText.text = "Win";
+            }
             Debug.Log(string.Format("Winner: {0}", winner));
+
+            return;
         }
 
 
         int color = TurnColor(turn);
 
         // Pass
-        if (!endFlag && board.Availables(color).Count == 0)
+        if (board.Availables(color).Count == 0)
         {
-            Debug.Log("passed!");
+            Debug.Log("skipped!");
             turn += 1;
             return;
         }
 
+        OthelloPlayer player;
         if (color == player1.Color)
         {
-            // Black Turn
-            Pos action = player1.Action(board.GetBoard()) ?? new Pos() { x = -1, y = -1 };
-            if (!ValidPos(action, color)) { return; }
-
-            PutStone(action, color);
-            ReverseStones(board.GetReversibles(action, color), color);
-
-            board.UpdateBoard(action, color);
-
-
-            turn += 1;
-
+            player = player1;
         }
         else if (color == player2.Color)
         {
-            // White Turn
-            Pos action = player2.Action(board.GetBoard()) ?? new Pos() { x = -1, y = -1 };
-            if (!ValidPos(action, color)) { return; }
-
-            PutStone(action, color);
-            ReverseStones(board.GetReversibles(action, color), color);
-
-            board.UpdateBoard(action, color);
-
-            turn += 1;
+            player = player2;
         }
+        else
+        {
+            return;
+        }
+
+        Pos action = player.Action(board.GetBoard(), turn) ?? new Pos() { x = -1, y = -1 };
+        if (!ValidPos(action, color)) { return; }
+
+        PutStone(action, color);
+
+        // Make a sound
+        audioSource.PlayOneShot(audioSource.clip);
+
+        ReverseStones(board.GetReversibles(action, color), color);
+
+        board.UpdateBoard(action, color);
+        blackCountText.text = board.CountStones(StoneColor.black).ToString();
+        whiteCountText.text = board.CountStones(StoneColor.white).ToString();
+        turn += 1;
+
     }
 
     // Get this turn color
@@ -156,6 +184,7 @@ public class OthelloManager : MonoBehaviour {
 
         // Put the stone where player clicked
         // stone.transform.position = new Vector3(clickedGameObject.transform.position.x, 0.18f, clickedGameObject.transform.position.z);
+        
     }
 
     // Reverse stones
@@ -177,7 +206,7 @@ public class OthelloManager : MonoBehaviour {
     // Game end flag
     bool IsEnd()
     {
-        return board.Availables(1).Count == 0 && board.Availables(-1).Count == 0;
+        return board.Availables(StoneColor.black).Count == 0 && board.Availables(StoneColor.white).Count == 0;
     }
 
     // Get the winner

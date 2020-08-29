@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Othello
 {
-
+    // Abstract player class
     public abstract class OthelloPlayer
     {
         public int Color { get; }
@@ -16,17 +16,18 @@ namespace Othello
             Color = color;
         }
 
-        abstract public Pos? Action(int[,] board);
-
+        // Return the position where the stone is put
+        abstract public Pos? Action(int[,] board, int turn);
     }
     
+    // User class
     public class OthelloUser : OthelloPlayer
     {
         GameObject clickedGameObject;
 
         public OthelloUser(int color) : base(color) { }
 
-        public override Pos? Action(int[,] _)
+        public override Pos? Action(int[,] _, int turn)
         {
             if (Input.GetMouseButtonDown(0))
             {
@@ -40,13 +41,13 @@ namespace Othello
                     clickedGameObject = hit.collider.gameObject;
                 }
 
-                if (clickedGameObject == null || this.clickedGameObject.tag != "Board Cell")
+                if (clickedGameObject == null || clickedGameObject.tag != "Board Cell")
                 {
                     Debug.Log("Invalid click!");
                     return null;
                 }
 
-                string[] arr = this.clickedGameObject.name.Split('_');
+                string[] arr = clickedGameObject.name.Split('_');
                 int x = int.Parse(arr[1][1].ToString());
                 int y = int.Parse(arr[1][0].ToString());
                 return new Pos() { x = x, y = y };
@@ -55,6 +56,7 @@ namespace Othello
         }
     }
 
+    // CPU class
     public class OthelloComputer : OthelloPlayer
     {
         OthelloAI ai;
@@ -65,10 +67,10 @@ namespace Othello
             ai = new OthelloAI(depth, color);
         }
 
-        public override Pos? Action(int[,] board)
+        public override Pos? Action(int[,] board, int turn)
         {
             stopWatch = System.Diagnostics.Stopwatch.StartNew();
-            Pos? action = ai.AcquireOptAction(board, Color);
+            Pos? action = ai.AcquireOptAction(board, turn);
             stopWatch.Stop();
             Debug.Log(string.Format("Time: {0}", stopWatch.Elapsed));
             return action;
